@@ -2,6 +2,7 @@
 
 import aj from "@/lib/arcjet";
 import { db } from "@/lib/prisma";
+import { checkUser } from "@/lib/checkUser";
 import { request } from "@arcjet/next";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -18,18 +19,22 @@ const serializeTransaction = (obj) => {
 };
 
 export async function getUserAccounts() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
   try {
+    const { userId } = await auth();
+    if (!userId) return [];
+
+    let user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+
+    if (!user) {
+      user = await checkUser();
+    }
+
+    if (!user) {
+      return [];
+    }
+
     const accounts = await db.account.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "desc" },
@@ -43,11 +48,10 @@ export async function getUserAccounts() {
     });
 
     // Serialize accounts before sending to client
-    const serializedAccounts = accounts.map(serializeTransaction);
-
-    return serializedAccounts;
+    return accounts.map(serializeTransaction);
   } catch (error) {
-    console.error(error.message);
+    console.error("Error in getUserAccounts:", error.message);
+    return [];
   }
 }
 
@@ -82,9 +86,13 @@ export async function createAccount(data) {
       throw new Error("Request blocked");
     }
 
-    const user = await db.user.findUnique({
+    let user = await db.user.findUnique({
       where: { clerkUserId: userId },
     });
+
+    if (!user) {
+      user = await checkUser();
+    }
 
     if (!user) {
       throw new Error("User not found");
@@ -135,22 +143,31 @@ export async function createAccount(data) {
 }
 
 export async function getDashboardData() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+  try {
+    const { userId } = await auth();
+    if (!userId) return [];
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
+    let user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
 
-  if (!user) {
-    throw new Error("User not found");
+    if (!user) {
+      user = await checkUser();
+    }
+
+    if (!user) {
+      return [];
+    }
+
+    // Get all user transactions
+    const transactions = await db.transaction.findMany({
+      where: { userId: user.id },
+      orderBy: { date: "desc" },
+    });
+
+    return transactions.map(serializeTransaction);
+  } catch (error) {
+    console.error("Error in getDashboardData:", error.message);
+    return [];
   }
-
-  // Get all user transactions
-  const transactions = await db.transaction.findMany({
-    where: { userId: user.id },
-    orderBy: { date: "desc" },
-  });
-
-  return transactions.map(serializeTransaction);
 }
