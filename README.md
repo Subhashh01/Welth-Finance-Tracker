@@ -24,23 +24,19 @@
 ## 📌 Table of Contents
 - [Executive Overview](#-executive-overview)
 - [Key Features](#-key-features)
-- [System Architecture](#-system-architecture)
 - [Tech Stack](#-tech-stack)
 - [Database Schema & Data Model](#-database-schema--data-model)
 - [Folder Structure](#-folder-structure)
-- [Getting Started](#-getting-started)
-- [Environment Variables](#-environment-variables)
 - [Background Workflows & Cron Jobs](#-background-workflows--cron-jobs)
 - [Security & Rate Limiting](#-security--rate-limiting)
-- [Production Deployment](#-production-deployment)
 
 ---
 
 ## 🚀 Executive Overview
 
-**Welth** was built to eliminate the tedious manual effort in personal accounting. By combining **Google Gemini Vision AI**, **Inngest Event-Driven Workflows**, and **Server Actions**, Welth delivers an automated financial copilot:
+**Welth** was built to eliminate the tedious manual effort in personal accounting. By combining **Google Gemini Vision AI**, **Inngest Event-Driven Workflows**, and **Next.js Server Actions**, Welth delivers an automated financial copilot:
 
-1. **Instant Receipt Scanning**: Upload a receipt photo or take a picture on mobile; Gemini AI extracts amount, merchant, date, and category in seconds.
+1. **Instant Receipt Scanning**: Upload a receipt photo or capture it on mobile; Gemini AI extracts amount, merchant, date, and category in seconds.
 2. **Autonomous Background Workers**: Inngest processes recurring expenses on schedule and monitors budgets every 6 hours.
 3. **Monthly Financial Insights**: Gemini analyzes user spending patterns each month and delivers customized tips via Resend HTML emails.
 4. **Enterprise-Grade Protection**: Clerk handles secure authentication, while Arcjet guards server actions with bot detection and rate limiting.
@@ -79,47 +75,6 @@
 - Aggregates monthly income, expenses, and category breakdown.
 - Sends data to Gemini AI to generate 3 tailored, actionable financial recommendations.
 - Renders responsive, branded email reports using **React Email** and dispatches via **Resend**.
-
----
-
-## 🏗️ System Architecture
-
-```mermaid
-flowchart TD
-    User([User / Browser])
-    
-    subgraph Frontend ["Next.js 15 Client Layer"]
-        UI[React 19 + Tailwind UI]
-        Scanner[Receipt Scanner Component]
-        Charts[Recharts Visualizations]
-    end
-
-    subgraph Security ["Security & Auth Layer"]
-        Clerk[Clerk Auth Middleware]
-        Arcjet[Arcjet Bot Detection & Rate Limiter]
-    end
-
-    subgraph Backend ["Next.js Server Actions & API Routes"]
-        Actions[Transaction / Account Actions]
-        InngestRoute[/api/inngest Endpoint]
-    end
-
-    subgraph External ["External Services"]
-        Gemini[Google Gemini 3.6 Flash AI]
-        Resend[Resend Email Service]
-        InngestCloud[Inngest Event Engine]
-        DB[(Supabase PostgreSQL)]
-    end
-
-    User --> UI
-    UI --> Clerk --> Arcjet --> Actions
-    Scanner -->|Image Base64| Actions --> Gemini
-    Actions -->|Prisma ORM| DB
-    InngestCloud <-->|Cron & Event Triggers| InngestRoute
-    InngestRoute -->|Generate AI Insights| Gemini
-    InngestRoute -->|Dispatch Reports/Alerts| Resend
-    InngestRoute -->|Batch Update Balances| DB
-```
 
 ---
 
@@ -270,69 +225,6 @@ my-app/
 
 ---
 
-## ⚙️ Getting Started
-
-### 1. Prerequisites
-- **Node.js**: `v18.17+` (v20+ recommended)
-- **PostgreSQL Database** (e.g., [Supabase](https://supabase.com))
-- Free API keys from:
-  - [Clerk](https://clerk.com) (Authentication)
-  - [Google AI Studio](https://aistudio.google.com) (Gemini AI)
-  - [Arcjet](https://arcjet.com) (Security)
-  - [Resend](https://resend.com) (Transactional Emails)
-
-### 2. Clone and Install Dependencies
-```bash
-git clone https://github.com/Subhashh01/Welth-Finance-Tracker.git
-cd Welth-Finance-Tracker/my-app
-npm install
-```
-
-### 3. Setup Environment Variables
-Create a `.env` file in the root directory:
-```env
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-
-# Database (Supabase PostgreSQL)
-DATABASE_URL="postgresql://postgres.xxx:password@aws-pooler.supabase.com:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres.xxx:password@aws-pooler.supabase.com:5432/postgres"
-
-# Arcjet Security
-ARCJET_KEY=ajkey_...
-
-# Google Gemini AI
-GEMINI_API_KEY=AIzaSy...
-
-# Resend Email Engine
-RESEND_API_KEY=re_...
-```
-
-### 4. Push Database Schema
-```bash
-npx prisma db push
-npx prisma generate
-```
-
-### 5. Run the Application
-In your primary terminal:
-```bash
-npm run dev
-```
-
-In a secondary terminal (to test local Inngest background jobs):
-```bash
-npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-Open Inngest Dev Server dashboard at [http://localhost:8288](http://localhost:8288).
-
----
-
 ## ⚡ Background Workflows & Cron Jobs
 
 Welth leverages **Inngest** to execute reliable serverless background workflows without managing infrastructure:
@@ -352,21 +244,6 @@ Welth leverages **Inngest** to execute reliable serverless background workflows 
 - **Server Action Protection**: Rate limiting is enforced on critical operations like transaction creation using token buckets.
 - **Authentication**: Route-level protection via Clerk middleware (`isProtectedRoute`) redirects unauthenticated requests while keeping webhooks and public landing pages accessible.
 - **Database Safety**: All balance mutations are wrapped inside atomic Prisma transactions to prevent race conditions or partial balance updates.
-
----
-
-## 🚢 Production Deployment
-
-### Deploying on Vercel
-1. Push your code to GitHub.
-2. Import the repository in [Vercel](https://vercel.com).
-3. Add all `.env` environment variables in Vercel project settings.
-4. Click **Deploy**. (Prisma Client generation is automatically triggered by the `"postinstall": "prisma generate"` script).
-
-### Connecting Inngest Cloud
-1. Log in to [Inngest Dashboard](https://app.inngest.com).
-2. Sync your production URL: `https://your-domain.vercel.app/api/inngest`.
-3. Add `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` to your Vercel Environment Variables.
 
 ---
 
