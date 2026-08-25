@@ -21,6 +21,8 @@ const aj = arcjet({
       mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
       allow: [
         "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
+        "CATEGORY:PREVIEW", // Vercel screenshot bot, Discord, Slack, etc
+        "CATEGORY:MONITOR", // Uptime monitors
         "GO_HTTP", // For Inngest
         // See the full list at https://arcjet.com/bot-list
       ],
