@@ -14,8 +14,11 @@
 [![Inngest](https://img.shields.io/badge/Inngest-Background_Jobs-000000?style=for-the-badge&logo=inngest)](https://www.inngest.com/)
 [![Arcjet](https://img.shields.io/badge/Arcjet-Security_%26_Rate_Limit-orange?style=for-the-badge)](https://arcjet.com/)
 [![Resend](https://img.shields.io/badge/Resend-Email_Engine-black?style=for-the-badge&logo=resend)](https://resend.com/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-00C7B7?style=for-the-badge&logo=vercel)](https://welth-finance-tracker-six.vercel.app)
 
 **An intelligent, full-stack financial SaaS platform that empowers users to track, analyze, and optimize personal finances with real-time AI receipt scanning, automated budget alerts, recurring transaction pipelines, and monthly AI financial reports.**
+
+👉 **[Launch Live Demo](https://welth-finance-tracker-six.vercel.app)**
 
 </div>
 
