@@ -249,8 +249,3 @@ Welth leverages **Inngest** to execute reliable serverless background workflows 
 
 ## 👤 Author
 - **Subhash Bharti** — [GitHub](https://github.com/Subhashh01)
-
----
-
-## 📄 License
-This project is licensed under the MIT License.
